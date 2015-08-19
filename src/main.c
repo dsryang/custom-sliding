@@ -169,34 +169,26 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
   if (light_color_t) {
     light_color_hex = light_color_t->value->int32;
-
     persist_write_int(KEY_LIGHT_COLOR, light_color_hex);
-
-    layer_set_update_proc(light_layer, draw_light_layer);
+    layer_mark_dirty(light_layer);
   }
 
   if (dark_color_t) {
     dark_color_hex = dark_color_t->value->int32;
-
     persist_write_int(KEY_DARK_COLOR, dark_color_hex);
-
-    layer_set_update_proc(dark_layer, draw_dark_layer);
+    layer_mark_dirty(dark_layer);
   }
 
   if (time_color_t) {
     int time_color = time_color_t->value->int32;
-
     persist_write_int(KEY_TIME_COLOR, time_color);
-
     set_time_color(time_color);
   }
 
   if (date_color_t) {
     int date_color = date_color_t->value->int32;
-
     persist_write_int(KEY_DATE_COLOR, date_color);
-
-    set_time_color(date_color);
+    set_date_color(date_color);
   }
 }
 
@@ -227,6 +219,8 @@ static void main_window_load(Window *window) {
   // Get the root layer
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  GColor time_color = GColorWhite;
+  GColor date_color = GColorWhite;
   int16_t window_width = bounds.size.w;
   int16_t window_height = bounds.size.h;
   int16_t text_offset = 7;
@@ -236,25 +230,29 @@ static void main_window_load(Window *window) {
   int16_t time_text_y = (window_height / 2) - (dark_height / 2) +
                         ((dark_height - time_text_height - date_text_height) / 2) - text_offset;
   int16_t date_text_y = time_text_y + time_text_height;
-  
+
   // Create light layer
   light_layer = layer_create(GRectZero);
-  if (persist_read_int(KEY_LIGHT_COLOR)) {
+
+  // Get light color persist and set it as the light color
+  if (persist_exists(KEY_LIGHT_COLOR)) {
     light_color_hex = persist_read_int(KEY_LIGHT_COLOR);
   }
   else {
-    light_color_hex = 5614335;
+    light_color_hex = 5614335; // Default value of GColorPictonBlue
   }
   layer_set_update_proc(light_layer, draw_light_layer);
   layer_add_child(window_layer, light_layer);
   
   // Create dark layer
   dark_layer = layer_create(GRectZero);
-  if (persist_read_int(KEY_DARK_COLOR)) {
+
+  // Get dark color persist and set it as the dark color
+  if (persist_exists(KEY_DARK_COLOR)) {
     dark_color_hex = persist_read_int(KEY_DARK_COLOR);
   }
   else {
-    dark_color_hex = 21930;
+    dark_color_hex = 21930; // Default value of GColorCobaltBlue
   }
   layer_set_update_proc(dark_layer, draw_dark_layer);
   layer_add_child(window_layer, dark_layer);
@@ -262,7 +260,12 @@ static void main_window_load(Window *window) {
   // Create time TextLayer
   time_layer = text_layer_create(GRect(0, time_text_y, window_width, time_text_height));
   text_layer_set_background_color(time_layer, GColorClear);
-  text_layer_set_text_color(time_layer, GColorWhite);
+
+  // Get time color persist and set it as the time color
+  if (persist_exists(KEY_TIME_COLOR)) {
+    time_color = GColorFromHEX(persist_read_int(KEY_TIME_COLOR));
+  }
+  text_layer_set_text_color(time_layer, time_color);
 
   // Apply to time TextLayer
   time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LATO_BOLD_46));
@@ -273,7 +276,12 @@ static void main_window_load(Window *window) {
   // Create date TextLayer
   date_layer = text_layer_create(GRect(0, date_text_y, window_width, date_text_height));
   text_layer_set_background_color(date_layer, GColorClear);
-  text_layer_set_text_color(date_layer, GColorWhite);
+
+  // Get date color persist and set it as the date color
+  if (persist_exists(KEY_DATE_COLOR)) {
+    date_color = GColorFromHEX(persist_read_int(KEY_DATE_COLOR));
+  }
+  text_layer_set_text_color(date_layer, date_color);
 
   // Apply to date TextLayer
   text_layer_set_font(date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
@@ -323,6 +331,10 @@ static void init() {
   
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+
+  // Register with AppMessage
+  app_message_register_inbox_received(inbox_received_handler);
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
 
 static void deinit() {
