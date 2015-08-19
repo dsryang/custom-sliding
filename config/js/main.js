@@ -38,7 +38,7 @@ function getAndStoreConfigData() {
 		lightColor: $lightColorPicker.val(),
 		darkColor: $darkColorPicker.val(),
 		timeColor: $timeColorPicker.val(),
-		dateColor: $timeColorPicker.val(),
+		dateColor: $dateColorPicker.val(),
 	};
 
 	localStorage.lightColor = options.lightColor;
