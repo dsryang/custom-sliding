@@ -1,0 +1,39 @@
+{
+    "appKeys": {
+        "lightColor": 0,
+        "darkColor": 1,
+        "timeColor": 2,
+        "dateColor": 3
+        },
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "David Yang",
+    "longName": "Custom Sliding",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/Blue Sliding Icon.png",
+                "menuIcon": true,
+                "name": "MENU_ICON",
+                "type": "png"
+            },
+            {
+                "file": "fonts/Lato-Bold.ttf",
+                "name": "FONT_LATO_BOLD_46",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Custom Sliding",
+    "targetPlatforms": [
+        "basalt"
+    ],
+    "uuid": "cff39445-254b-4df9-aeb4-25d3cfd947aa",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
